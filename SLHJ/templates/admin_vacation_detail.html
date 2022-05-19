@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block extrahead %}
+<link href="{% static 'bs/css/user_mypage.css' %}" rel="stylesheet">
+<link href="{% static 'bs/css/admin_vacation_detail.css' %}" rel="stylesheet">
+
+{% endblock %}
+
+{% block title %}여행지 상세{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/admin_vacation_detail.js' %}"></script>
+{% endblock%}
+<i class="fa fa-bars"></i>
+
+<div id="side_nav" class="side_nav">
+    <span class="nav_close">&times;</span>
+    <div class="side_menu" id="user_profile">{{ user.user_id }}</div>
+    <a class="side_menu" href="{% url 'admin_info' %}">회원정보</a>
+    <a class="side_menu" href="{% url 'admin_pw_change' %}">비밀번호 변경</a>
+    <a class="side_menu" href="{% url 'admin_hotel' %}">호텔관리</a>
+    <a class="side_menu" id="self" href="{% url 'admin_vacation' %}">여행지 관리</a>
+    <a class="side_menu" href="{% url 'admin_manage' %}">예약관리</a>
+</div>
+
+
+<div class="con2">
+    <div class="contents">
+        <h5 id="title">마이페이지 > 여행지 상세정보 </h5>
+        <div class="info_form" name="hotel_info_form">
+            <div class="info_top">
+                <label class="index_title">기본정보</label>
+                <a id="adjust_btn" type="button" href="{% url 'vacation_update' %}">정보수정</a>
+                <a id="adjust_btn" type="button" href="{% url 'vacation_delete' %}">여행지삭제</a>
+            </div>
+            <div class="vacation_info_title">
+                <div class="info_title">
+                    <ul>
+                        <li>고유번호</li>
+                    </ul>
+                </div>
+                <div class="info_title">
+                    <ul>
+                        <li>여행지 이름</li>
+                    </ul>
+                </div>
+                <div class="info_title">
+                    <ul>
+                        <li>도로명 주소</li>
+                    </ul>
+                </div>
+                <div class="info_title">
+                    <ul>
+                        <li>전화번호</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="vacation_info_content">
+                <div class="info">
+                    <ul>
+                        <li>{{ vacation.vacation_id }}</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ vacation.TURSM_INFO_NM }}</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ vacation.SM_RE_ADDR }}</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ vacation.TELNO }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="vacation_info_summary">
+                <label class="info_title">요약설명</label>
+                <span>{{ vacation.vacation_comment }}</span>
+            </div>
+
+            <label class="vacation_img_label">대표 사진</label>
+            <div>
+                <img style="background-image: url('/media/{{ vacation.vacation_image.vacation_image_file_path }}'); width: 350px; height: 230px;">
+            </div>
+        </div>
+
+        <div class="review_form" name="vacation_detail_review">
+            <label class="review_label index_title">리뷰관리</label>
+            <div class="review_top">
+                <div class="user_vacation_review">
+                    <label class="review_title">평점</label>
+                    <div class="review_rate">
+                        <label>{{ vacation.vacation_rate }}</label>
+                        <label class="max_rate">/5.0</label>
+                    </div>
+                    <div class="review_star">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="review_score">
+                    <div>
+                        <label class="review_count">리뷰 개수</label>
+                    </div>
+                    <div><p></p></div>
+                    <div>
+                        <label class="review_total">{{ all_review }}개</label>
+                    </div>
+                </div>
+            </div>
+
+            {% for vacation_review in vacation_reviews %}
+            <div class="user_review">
+                <div class="reviewer_profile">
+                    <i class='fas fa-user-circle' style='font-size:30px;color:#CECECE;margin-left:1%;'></i>
+                    <div>
+                        <label class="reviewer_id">{{ vacation_review.id }}</label>
+                        <div class="review_star_box">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <label>{{ vacation_review.vacation_review_rate }}</label><br>
+                            <label>{{ vacation_review.vacation_review_date }}</label>
+                        </div>
+                    </div>
+                </div>
+                <span class="review_comment">{{ vacation_review.vacation_review_content }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block extrahead %}
+<link href="{% static 'bs/css/user_mypage.css' %}" rel="stylesheet">
+<link href="{% static 'bs/css/admin_manage.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}예약관리{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/admin_manage.js' %}"></script>
+{% endblock%}
+<i class="fa fa-bars"></i>
+
+<div id="side_nav" class="side_nav">
+    <span class="nav_close">&times;</span>
+    <div class="side_menu" id="user_profile">{{ user.user_id }}</div>
+    <a class="side_menu" href="{% url 'admin_info' %}">회원정보</a>
+    <a class="side_menu" href="{% url 'admin_pw_change' %}">비밀번호 변경</a>
+    <a class="side_menu" href="{% url 'admin_hotel' %}">호텔관리</a>
+    <a class="side_menu" href="{% url 'admin_vacation' %}">여행지 관리</a>
+    <a class="side_menu" id=self href="{% url 'admin_manage' %}">예약관리</a>
+</div>
+
+<div class="con2">
+    <div class="contents">
+        <h5 id="title">마이페이지 > 예약관리</h5>
+        <form class="search_form form-group" action="." method="POST">
+            {% csrf_token %}
+            <input type="submit" class="search_btn" value="조회">
+            <div class="choice_box">
+                <button class="choice ch clicked_btn" type="button" value="hotel">호텔</button>
+                <button class="choice cv" type="button" value="vacation">여행지</button>
+                <input type="hidden" name="choice" id="choice" value="hotel">
+            </div>
+            <div id="choice_vacation">
+                <label class="index_title">여행지 선택</label>
+                <select class="choice_vacation form-select" name="choice_vacation">
+                    <option value="default">=== 선택 ===</option>
+                    {% for p in vacation%}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="choice_hotel">
+                <label class="index_title">호텔 선택</label>
+                <select class="choice_hotel form-select" name="choice_hotel">
+                    <option value="default">=== 선택 ===</option>
+                    {% for p in hotel%}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="index_title">예약자명</label>
+                <input type="text" class="form-control reserve_info" name="reserve_name">
+            </div>
+            <div>
+                <label class="index_title">예약번호</label>
+                <input type="text" class="form-control reserve_info" name="reserve_num">
+            </div>
+            <div>
+                <label class="index_title">이용날짜</label>
+                <input class="form-control reserve_info" name="reserve_date" id="date" type="text"
+                    placeholder="YYYY-MM-DD" />
+            </div>
+        </form>
+
+        <div>
+                {% if place_type == 'vacation'%}
+                <label class="res_title">{{ selected}} : 검색결과 </label>
+                <label class="res_title res_sum"> 총 {{ reserve_count }} 건 </label>
+    
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>예약번호</th>
+                            <th>이용일시</th>
+                            <th>예약자명</th>
+                            <th>결제금액</th>
+                            <th>예약취소</th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    {% for r in reserves %}
+                    <tr>
+                        <td>{{ r.vacation_reserve_id }}</td>
+                        <td>{{ r.vacation_reserve_date }}</td>
+                        <td>{{ r.vacation_reserve_username}}</td>
+                        <td>{{ r.vacation_reserve_price|intcomma }}</td>
+                        <form action="{% url 'vacation_delete2' %}" method="POST">
+                            {% csrf_token %}
+                            <td><button type="submit" id="del_reserve" value="{{ r.vacation_reserve_id }}">예약취소</button></td>
+                            <input type="hidden" name="vacation_reserve_id" value="{{ r.vacation_reserve_id }}">  
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% endif %}
+
+                {% if place_type == 'hotel'%}
+                <label class="res_title">{{ selected}} : 검색결과 </label>
+                <label class="res_title res_sum"> 총 {{ reserve_count }} 건 </label>
+    
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>예약번호</th>
+                            <th>이용일시</th>
+                            <th>객실정보</th>
+                            <th>예약자명</th>
+                            <th>결제금액</th>
+                            <th>예약취소</th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    {% for r in reserves %}
+                    <tr>
+                        <td>{{ r.hotel_reserve_id }}</td>   
+                        <td>{{ r.hotel_reserve_startdate }} ~ {{ r.hotel_reserve_enddate }}</td>
+                        <td> {{ r.room_id.room_type }} </td>
+                        <td>{{ r.hotel_reserve_username}}</td>
+                        <td>{{ r.hotel_reserve_price|intcomma }}</td>
+                        <form action="{% url 'hotel_delete2' %}" method="POST">
+                            {% csrf_token %}
+                            <td><button type="submit" id="del_reserve" value="{{ r.hotel_reserve_id }}">예약취소</button></td>
+                            <input type="hidden" name="hotel_reserve_id" value="{{ r.hotel_reserve_id }}">
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% endif %}
+            </table>
+            <div>
+                {{ message }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

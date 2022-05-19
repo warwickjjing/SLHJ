@@ -1,0 +1,244 @@
+{% extends "base.html"%}
+{% load static %}
+{% block extrahead %}
+<!-- <script src="{% static 'bs/js/vacation_detail.js' %}"></script> -->
+<script src="{% static 'bs/js/va_search.js' %}"></script>
+<script src="{% static 'bs/js/vacation_detail.js' %}"></script>
+{% endblock %}
+
+{% block title %}{{ vacation.TURSM_INFO_NM }}{% endblock %} {# 호텔명 #}
+
+{% block contents %}
+<div class="container hotel_detail">
+    <!--상단 평점, 호텔명, 주소-->
+    <div class="col-12">
+        <div class="rating_head">
+            {% for i in "x"|rjust:"5" %}
+                {% if vacation.vacation_rate >= forloop.counter %}
+                    <i class="fas fa-star"></i>
+                {% else %}
+                    <i class="fas fa-star no_star"></i>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <h1 class="mt-3">{{ vacation.TURSM_INFO_NM }}</h1>
+        <h5>{{ vacation.SM_RE_ADDR }}</h5>
+        <div class="vacation_main_img mt-4 mb-5"></div>
+    </div>
+    <!-- 샹세정보 -->
+    <div class="d-lg-flex hotel_detail1">
+        <div class="col-lg-8 col-12 hotel_detail_info pe-lg-5">
+            <div>
+                <h2>상세 정보</h2>
+                {% if vacation.TELNO %}
+                <p><i class="fas fa-phone me-2"></i>{{ vacation.TELNO }}</p>
+                {% endif %}
+                <p>{{ vacation.vacation_comment }}</p>
+            </div>
+            <hr>
+            <div>
+                <h2>위치</h2>
+                {% if vacation.REFINE_WGS84_LAT %}
+                <div id="googleMap" class="google_map mb-lg-0 mb-5"></div>
+                {% else %}
+                <div class="google_map mb-lg-0 mb-5"></div>
+                {% endif %}
+            </div>
+        </div>
+    
+        <!-- 예약 -->
+        <div class="col-lg-4 col-12 hotel_detail_reserve align-self-sm-start">
+            <p>예약을 진행하시려면 인원수를 입력해주세요.</p>
+            <form action="." method="POST">
+                <input type="hidden" name="vacation_name" value="{{ vacation.TURSM_INFO_NM }}">
+                {% csrf_token %}
+                <div>
+                    <div class="hotel_detail_reserve_btn hotel_detail_reserve_date" onclick="vacation_get_date()">
+                        <button type="button" class="hotel_detail_reserve_checkin"><i class="fas fa-calendar-alt"></i><span class="icon_before">{{ request.session.vacation_date }}</span></button>
+                        <input type="hidden" value="{{ request.session.vacation_date }}" name="vacation_date">
+                    </div>
+                    <div class="vacation_date_pick" id="vacation_date_pick">
+                        <div class="d-flex justify-content-center">
+                            <div class="input-daterange reserve_date"><input type="text" name="va_daterange" id="datepicker" readonly /> 
+                            <input type="button" value="적용" name="reserve_date_choice">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vacation_choice_people">
+                    <button type="button" class="hotel_detail_reserve_btn hotel_detail_reserve_people" name="vacation_reserve_people" onclick="vacation_choice_people()"><i class="fas fa-user-alt"></i><span class="va_people">{{ vacation_reserve_people }}명</span></button>
+                    <div class="d-flex justify-content-center hotel_detail_reserve_btn plus_minus_btn">
+                        <div class="vacation_reserve_people">
+                          <button type="button" data-quantity="minus" data-field="vacation_reserve_people">
+                            <i class="fa fa-minus" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                        <input class="input-group-field vacation_reserve_people" type="number" name="vacation_reserve_people" max="1" value="{{ vacation_reserve_people }}" readonly/>
+                        <div class="vacation_reserve_people">
+                          <button type="button" data-quantity="plus" data-field="vacation_reserve_people">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                </div>
+                <button class="hotel_detail_reserve_btn hotel_detail_reserve_btn_submit">예약하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 평점 -->
+    <div>
+        <h2>리뷰</h2>
+        <div class="hotel_review_rating d-lg-flex">
+            <div class="d-flex flex-column total_rating col-lg-6 justify-content-center">
+                <p><span class="my_rating">{{ vacation.vacation_rate }} </span><span class="slash">/</span> 5.0</p>
+                <div class="my_rating_star">
+                    {% for i in "x"|rjust:"5" %}
+                        {% if vacation.vacation_rate >= forloop.counter %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="fas fa-star no_star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-6 d-lg-flex justify-content-center">
+                <table class="review_rating_cnt">
+                    <tr>
+                        <td class="review_rating_cnt_star">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </td>
+                        <td>
+                            <p>{{ count.5 }} 명</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="review_rating_cnt">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </td>
+                        <td>
+                            <p>{{ count.4 }} 명</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="review_rating_cnt">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </td>
+                        <td>
+                            <p>{{ count.3 }} 명</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="review_rating_cnt">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </td>
+                        <td>
+                            <p>{{ count.2 }} 명</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="review_rating_cnt">
+                            <i class="fas fa-star"></i>
+                        </td>
+                        <td>
+                            <p>{{ count.1 }} 명</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="user_review">
+            <table class="table">
+                {% if reviews %}
+                        {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.id_id }}</td>
+                            <td>{{ review.vacation_review_content }}</td>
+                            <td class="upload_date">{{ review.vacation_review_date|date:"Y년 m월 d일" }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>리뷰가 없습니다.</td>
+                        </tr>
+                    {% endif %}
+            </table>
+            <!-- pagination -->
+            <div class="container mt-1">
+                <ul class="pagination justify-content-center">
+                    {# << 표시 여부 #} 
+                    {% if reviews.number > 1 %}       
+                    <li class="page-item"><a class="page-link" href="#" title="처음"><i class='fas fa-angle-double-left'></i></a></li>
+                    {% endif %}
+
+                    {# < 표시 여부 #}
+                    {% if start_page > 1%}
+                    <li class="page-item"><a class="page-link" href="#" title="이전"><i class='fas fa-angle-left'></i></a></li>
+                    {% endif %}
+
+                    {# 페이징 안의 '숫자' 표시 #}
+                    {% if reviews.paginator.num_pages > 1 %}
+                        {% for p in page_range %}
+                            {% if reviews.number != p %}
+                            <li class="page-item"><a class="page-link" href="#">{{ p }}</a></li>
+                            {% else %}
+                            <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {# > 표시 #}
+                    {% if reviews.paginator.num_pages > end_page %}
+                    <li class="page-item"><a class="page-link" href="#" title="다음"><i class='fas fa-angle-right'></i></a></li>
+                    {% endif %}
+                
+                    {# >> 표시 #}
+                    {% if reviews.number < reviews.paginator.num_pages %}
+                    <li class="page-item"><a class="page-link" href="#" title="마지막"><i class='fas fa-angle-double-right'></i></a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        {% if hotel_imgs %}
+        <h2>추천숙소</h2>
+        <div class="d-flex">
+            {% for hotel in hotel_imgs %}
+                    {% if forloop.counter < 4 %}
+                        {% if hotel %}
+                            <a href="{% url 'hotel_detail' hotel.hotel_id_id %}"><div class="recommend_vaction  me-lg-3 mb-lg-2 mb-3" style="background-image: url('/media/{{ hotel.hotel_image_file_path }}');"></div><span class="recommend">{{ hotel.hotel_id }}</span></a>
+                        {% else %}
+                            <div class="recommend_vaction col-lg-3 col-12 me-lg-3 mb-lg-0 mb-3"></div>
+                        {% endif %}
+                    {% else %}
+                        {% if hotel %}
+                            <a href="{% url 'hotel_detail' hotel.hotel_id_id %}"><div class="recommend_vaction col-lg-3 col-12 mb-lg-2 mb-3" style="background-image: url('/media/{{ hotel.hotel_image_file_path }}');"></div><span class="recommend">{{ vacation.vacation_id }}</span></a>
+                        {% else %}
+                            <div class="recommend_vaction col-lg-3 col-12 mb-lg-0 mb-3"></div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <input type="hidden" value="{{ vacation.REFINE_WGS84_LAT }}" name="lat">
+    <input type="hidden" value="{{ vacation.REFINE_WGS84_LOGT }}" name="lng">
+</div>
+
+{% endblock %}
+{% block extrafoot %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGkSbB_IhB_i3-8caf6gKcuDHLJT27d0k&callback=myMap"></script>
+{% endblock %}

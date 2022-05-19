@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block extrahead %}
+<link href="{% static 'bs/css/user_mypage.css' %}" rel="stylesheet">
+<link href="{% static 'bs/css/admin_menu.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}숙소 관리{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/admin_hotel.js' %}"></script>
+{% endblock%}
+<i class="fa fa-bars"></i>
+
+<div id="side_nav" class="side_nav">
+    <span class="nav_close">&times;</span>
+    <div class="side_menu" id="user_profile">{{ user.user_id }}</div>
+    <a class="side_menu" href="{% url 'admin_info' %}">회원정보</a>
+    <a class="side_menu" href="{% url 'admin_pw_change' %}">비밀번호 변경</a>
+    <a class="side_menu" id=self href="{% url 'admin_hotel' %}">호텔관리</a>
+    <a class="side_menu" href="{% url 'admin_vacation' %}">여행지 관리</a>
+    <a class="side_menu" href="{% url 'admin_manage' %}">예약관리</a>
+</div>
+
+<div class="con2">
+    <div class="contents">
+        <h5 id="title">마이페이지 > 호텔관리</h5>
+
+        <table class="reserves">
+            <div class="btn_container">
+                <a type="button" class="to_register" href="{% url 'hotel_register' %}">숙소등록</a>
+            </div>
+
+            <tr>
+                {% for hotel in hotels %}
+                <td class="reserve hotel_reserve">
+                    <img style="background-image: url('/media/{{ hotel.hotel_image.hotel_image_file_path }}');">
+                    <div class="info_container">
+                        <a type="button" class="detail_btn"
+                            href="{% url 'admin_hotel_detail' hotel.hotel_id %}">세부정보</a>
+                        <label class="reserve_name">{{ hotel.BIZPLC_NM }}</label>
+                        <label class="reserve_adress">{{ hotel.REFINE_ROADNM_ADDR }}</label>
+                        <label class="review_count">{{ hotel.hotel_rate}}
+                            {% for i in "x"|rjust:"5" %}
+                            {% if hotel.hotel_rate >= forloop.counter %}
+                            <i class="fas fa-star"></i>
+                            {% else %}
+                            <i class="fas fa-star no_star"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </label>
+                    </div>
+                </td>
+                {% endfor %}
+            </tr>
+        </table>
+
+        <div class="container mt-1">
+            <ul class="pagination justify-content-center">
+                {# << 표시 여부 #}
+                {% if hotels.number > 1 %}
+                <li class="page-item"><a class="page-link" href="?page=1" title="처음"><i
+                            class='fas fa-angle-double-left'></i></a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ hotels.previous_page_number }}" title="이전"><i
+                            class='fas fa-angle-left'></i></a></li>
+                {% endif %}
+
+                {% if hotels.paginator.num_pages > 1 %}
+                {% for p in page_range %}
+                {% if hotels.number != p %}
+                <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                {% else %}
+                <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                {# > 표시 #}
+                {% if hotels.paginator.num_pages > end_page %}
+                <li class="page-item"><a class="page-link" href="?page={{ hotels.next_page_number }}" title="다음"><i
+                            class='fas fa-angle-right'></i></a></li>
+                {% endif %}
+
+                {# >> 표시 #}
+                {% if hotels.number < hotels.paginator.num_pages %}
+                <li class="page-item"><a class="page-link" href="?page={{ hotels.paginator.num_pages }}" title="마지막"><i
+                            class='fas fa-angle-double-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

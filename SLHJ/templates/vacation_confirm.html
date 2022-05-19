@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+<link href="{% static 'bs/css/reserve_confirm.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+<div class="con">
+    <h3 class="title">예약완료</h3>
+    <div class="confirm_contents">
+        <ul class="confirm_list">
+            <li><label class="index">예약자 이름</label><label class="info">{{ reserve_info.vacation_reserve_username }}</label></li>
+            <li><label class="index">휴대폰 번호</label><label class="info">{{ reserve_info.vacation_reserve_phonenum }}</label></li>
+            <li><label class="index">예약번호</label><label class="info">{{ reserve_info.vacation_reserve_id}}</label></li>
+            <li><label class="index">여행지 이름</label><label class="info">{{ place }}</label></li>
+            <li><label class="index">이용날짜</label><label class="info">{{ reserve_info.vacation_reserve_date }}</label></li>
+            <li><label class="index">인원 및 수량</label><label class="info">{{ reserve_info.vacation_reserve_people }}</label></li>
+        </ul>
+
+        <hr>
+        <br>
+        <h4 class="sum">결제금액</h4>
+        <h4 class="sum important">{{ price }}원</h4>
+        <br>
+        <a type="button" id="to_mypage" href="{% url 'history_vacation' %}">마이페이지에서 확인하기</a>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

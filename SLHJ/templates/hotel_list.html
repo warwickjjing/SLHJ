@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block extrahead %}
+<link href="{% static 'bs/css/list.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+
+{% block title %}검색{% endblock %}
+<div style="width: 100%; margin-top: 120px;">
+    <div class="list_search" style="margin: 0 auto;">      <!-- 검색 창 -->
+        <select class="list_pl_search" > <!--지역 검색-->
+            <option value="suwon"><i class="fas fa-map-marker-alt" class="map"></i>수원</option>
+            <option value="siheong">시흥</option>
+            <option value="namyangzu" >남양주</option>
+            <option value="pazu" selected>파주</option>
+        </select>
+        <input type="date" class="list_stdate_search">  <!--날짜 검색-->
+        <!-- <input type="date" class="list_eddate_search"> -->
+ 
+        <select class="list_peonum_search" > <!--인원 검색-->
+            <option value="one" selected>1인</option>
+            <option value="two">2인</option>
+            <option value="three" >3인</option>
+            <option value="four">4인</option>
+        </select>
+        <input type="submit" class="search_submit" value="검색"> <!--검색버튼-->
+    </div>
+</div>
+
+    <!-- 우측 지도 -->
+    <!-- <div id="googleMap" class="list_gps_map"></div> -->
+   
+    <!-- 좌측 list -->
+    <div class="left_list" style=" left: 20%; margin: 0 auto; ">
+        {% if lists %}
+            {% for hotel in lists %}
+            
+                <button type="submit" class="table_list" onclick="list_choice(this)">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="li_lat">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="li_lng"> 
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="lat">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="lng">
+                    <div class="list_content">                
+                        <div class="list_hotel_image"></div>
+                        <div class= "list_text">
+                            <ul>
+                                <li class="list_hotel_name"> <a href= "#">{{ hotel.BIZPLC_NM }}</a></li> 
+                                <li class="list_hotel_add"> {{ hotel.REFINE_ROADNM_ADDR }} </li>
+                                <li>
+                                    <div class="list_rating">
+                                        {% for i in "x"|rjust:"5" %}
+                                            {% if hotel.hotel_rate >= forloop.counter %}
+                                            <i class="fas fa-star"></i>
+                                            {% else %}
+                                            <i class="fas fa-star no_star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </li>
+                                <br>
+                                <li class="list_hotel_pay">
+                                    {% for hotel_room in hotel_rooms %}
+                                        {% if hotel_room.hotel_id_id == hotel.hotel_id %}    
+                                            {{ hotel_room.room_price|intcomma }}원
+                                    
+                                        {% endif %}
+                                    {% endfor %}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </button>
+                
+            <p></p>
+            {% endfor %}  
+            <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="lat">
+            <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="lng">  
+        {% endif %} 
+
+        <!-- 리스트 밑의 번호 -->
+
+
+        <div class="list_pagination" style=" right:30%; margin: 0 auto;">
+            <ul class="pagination justify-content-center">
+                {# << 표시 여부 #} 
+                {% if lists.number > 1 %}       
+                <li class="page-item"><a class="page-link" href="?page=1" title="처음"><i class='fas fa-angle-double-left'></i></a></li>
+                {% endif %}
+
+                {# < 표시 여부 #}
+                {% if 1 < lists.number  %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.previous_page_number }}" title="이전"><i class='fas fa-angle-left'></i></a></li>
+                {% endif %}
+
+                {# 페이징 안의 '숫자' 표시 #}
+                {% if lists.paginator.num_pages > 1 %}
+                    {% for p in page_range %}
+                        {% if lists.number != p %}
+                        <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {# > 표시 #}
+                {% if lists.number < last_page   %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.next_page_number }}" title="다음"><i class='fas fa-angle-right'></i></a></li>
+                
+                {% endif %}
+            
+                {# >> 표시 #}
+                {% if lists.number < last_page %}
+                <li class="page-item"><a class="page-link" href="?page={{ last_page }}" title="마지막"><i class='fas fa-angle-double-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+
+{% endblock %}
+{% block extrafoot %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGkSbB_IhB_i3-8caf6gKcuDHLJT27d0k&callback=myMap"></script>    
+
+{% endblock %}

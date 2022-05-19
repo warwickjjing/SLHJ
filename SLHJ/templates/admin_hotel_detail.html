@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block extrahead %}
+<link href="{% static 'bs/css/user_mypage.css' %}" rel="stylesheet">
+<link href="{% static 'bs/css/admin_detail.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}호텔 이름{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/admin_hotel.js' %}"></script>
+{% endblock%}
+<i class="fa fa-bars"></i>
+
+<div id="side_nav" class="side_nav">
+    <span class="nav_close">&times;</span>
+    <div class="side_menu" id="user_profile">{{ user.user_id }}</div>
+    <a class="side_menu" href="{% url 'admin_info' %}">회원정보</a>
+    <a class="side_menu" href="{% url 'admin_pw_change' %}">비밀번호 변경</a>
+    <a class="side_menu" id=self href="{% url 'admin_hotel' %}">호텔관리</a>
+    <a class="side_menu" href="{% url 'admin_vacation' %}">여행지 관리</a>
+    <a class="side_menu" href="{% url 'admin_manage' %}">예약관리</a>
+</div>
+
+
+<div class="con2">
+    <div class="contents">
+        <h5 id="title">마이페이지 > 숙소등록 > 호텔이름</h5>
+        <div class="info_form" name="hotel_info_form">
+           
+            <label class="index_title">기본정보</label>
+            <a id="adjust_btn" type="button" href="{% url 'hotel_update' %}">정보수정</a>
+            <a id="adjust_btn" type="button" href="{% url 'hotel_delete' %}">숙소삭제</a>
+        
+            <div class="hotel_info_title">
+                <div class="info">
+                    <ul>
+                        <li>고유번호</li>       
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>숙소 이름</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>도로명 주소</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>영업상태</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="hotel_info_content">
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel.hotel_id }}</li>       
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel.BIZPLC_NM }}</li>
+                    </ul>
+                </div>
+                <div class="info3">
+                    <ul>
+                        <li>{{ hotel.REFINE_ROADNM_ADDR }}</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>영업중</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="hotel_info_summary">
+                <div class="info">
+                    <ul>
+                        <li>요약설명</li>       
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel.hotel_comment }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <label class="room_info_label">객실 정보</label>
+            <div class="hotel_room_title">
+                <div class="info">
+                    <ul>
+                        <li>객실종류</li>       
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>사용인원</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>가격</li>
+                    </ul>
+                </div>
+            </div>
+            {% for hotel_room in hotel_rooms %}
+            <div class="hotel_room_content">
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel_room.room_type }}</li>       
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel_room.room_people }}</li>
+                    </ul>
+                </div>
+                <div class="info">
+                    <ul>
+                        <li>{{ hotel_room.room_price }}</li>
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+            <div>
+                <label class="hotel_img_label">대표 사진</label>
+                <div>
+                    <img style="background-image: url('/media/{{ hotel.hotel_image.hotel_image_file_path }}'); width: 350px; height: 230px;">
+                </div> 
+            </div> 
+        
+          
+            
+        </div>
+        
+        <div class="review_form" name="vacation_detail_review">
+            <label class="review_label index_title">리뷰관리</label>
+            <div class="review_top">
+                <div class="user_vacation_review">
+                    <label class="review_title">평점</label>
+                    <div class="review_rate">
+                        <label>{{ hotel.hotel_rate }}</label>
+                        <label class="max_rate">/5.0</label>
+                    </div>
+                    <div class="review_star">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="review_score">
+                    <div>
+                        <label class="review_count">리뷰 개수</label>
+                    </div>
+                    <div><p></p></div>
+                    <div>
+                        <label class="review_total">{{ all_review }}개</label>
+                    </div>
+                </div>
+            </div>
+
+            {% for hotel_review in hotel_reviews %}
+            <div class="user_review">
+                <div class="reviewer_profile">
+                    <i class='fas fa-user-circle' style='font-size:30px;color:#CECECE;margin-left:1%;'></i>
+                    <div>
+                        <label class="reviewer_id">{{ hotel_review.id }}</label>
+                        <div class="review_star_box">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <label>{{ hotel_review.hotel_review_rate }}</label><br>
+                            <label>{{ hotel_review.hotel_review_date }}</label>
+                        </div>
+                    </div>
+                </div>
+                <span class="review_comment">{{ hotel_review.hotel_review_content }}</span>
+            </div>
+            {% endfor %}
+        </div> 
+    </div>
+</div>
+
+{% endblock %}

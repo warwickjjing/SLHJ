@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+<link href="{% static 'bs/css/user_mypage.css' %}" rel="stylesheet">
+<link href="{% static 'bs/css/user_reserve.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}여행지 관리{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/user_reserve.js' %}"></script>
+{% endblock %}
+<i class="fa fa-bars"></i>
+
+<div id="side_nav" class="side_nav">
+    <span class="nav_close">&times;</span>
+    <div class="side_menu" id="user_profile">{{user.user_id}}</div>
+    <a class="side_menu" href="{% url 'user_info' %}">회원정보</a>
+    <a class="side_menu" href="{% url 'pw_change' %}">비밀번호 변경</a>
+    <a class="side_menu" href="{% url 'history_hotel' %}">호텔관리</a>
+    <a class="side_menu" id="self" href="{% url 'history_vacation' %}">여행지 관리</a>
+</div>
+
+
+<div class="con2">
+    <div class="contents">
+        <h5 id="title">마이페이지 > 여행지 관리</h5>
+        <table class="reserves">
+            {% for vacation_reserve in vacation_reserves %}
+            <tr>
+                <td class="reserve">
+                    <img style="background-image: url('/media/{{ vacation_reserve.vacation_id.vacation_image.vacation_image_file_path }}');">
+                    <div class="info_container">
+                        <label class="reserve_name">{{ vacation_reserve.vacation_id.TURSM_INFO_NM }}</label>
+                        <label class="reserve_adress">{{ vacation_reserve.vacation_id.SM_RE_ADDR }}</label>
+                        <label class="review_count">
+                            <div>
+                                <span>여행지평점{{ vacation_reserve.vacation_id.vacation_rate }}</span>
+                                {% for i in "x"|rjust:"5" %}
+                                {% if vacation_reserve.vacation_id.vacation_rate >= forloop.counter %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="fas fa-star no_star"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            <!-- <div>
+                            <span>My</span>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            </div> -->
+                        </label>
+
+                        <ul class="reserve_info">
+                            <li class="left">인원</li>
+                            <li class="right">{{ vacation_reserve.vacation_reserve_people }}인</li>
+                            <li class="left">가격</li>
+                            <li class="right">{{ vacation_reserve.vacation_reserve_price }}원</li>
+                            <li class="left">예약일시</li>
+                            <li class="right visit_date">{{ vacation_reserve.vacation_reserve_date }}</li>
+                        </ul>
+                    </div>
+                    {% if vacation_reserve.vacation_reserve_date < today %}
+                    <div class="after_visit comment_box">
+                        <form name="reivew" class="form-group" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" id=vacation_id name=vacation_id
+                                value="{{ vacation_reserve.vacation_id_id }}">
+                            <textarea id = review name = review class="form-control review_comment"></textarea>
+                            <input type="number" id=rate name=rate class="form-control review_comment" min="1" max="5">
+                            <input type="submit" value="리뷰등록">
+                            <!-- <input type="button" value="수정">
+                            <input type="button" value="취소"> -->
+                        </form>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="container mt-1">
+            <ul class="pagination justify-content-center">
+                {# << 표시 여부 #} 
+                {% if vacation_reserves.number > 1 %}       
+                <li class="page-item"><a class="page-link" href="?page=1" title="처음"><i class='fas fa-angle-double-left'></i></a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ vacation_reserves.previous_page_number }}" title="이전"><i class='fas fa-angle-left'></i></a></li>
+                {% endif %}
+
+                {# 페이징 안의 '숫자' 표시 #}
+                {% if vacation_reserves.paginator.num_pages > 1 %}
+                    {% for p in page_range %}
+                        {% if vacation_reserves.number != p %}
+                        <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {# > 표시 #}
+                {% if vacation_reserves.paginator.num_pages > end_page %}
+                <li class="page-item"><a class="page-link" href="?page={{ vacation_reserves.next_page_number }}" title="다음"><i class='fas fa-angle-right'></i></a></li>
+                {% endif %}
+            
+                {# >> 표시 #}
+                {% if vacation_reserves.number < vacation_reserves.paginator.num_pages %}
+                <li class="page-item"><a class="page-link" href="?page={{ vacation_reserves.paginator.num_pages }}" title="마지막"><i class='fas fa-angle-double-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

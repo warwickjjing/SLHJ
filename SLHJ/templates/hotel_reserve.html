@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+<link href="{% static 'bs/css/reserve.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}호텔 예약{% endblock %}
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/reserve.js' %}"></script>
+{% endblock %}
+
+
+<div class="con">
+    <h3 class="reserve_title">예약 > 호텔예약</h3>
+
+    <section class="reservation">
+        <div class="form_box">
+        <form name="hotel_reserve" class="reserve" action="." method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>예약자 이름</label>
+                <input class="form-control" id="reserve_name" name="reserve_name"type="text" value="">
+            </div>
+            <div class="form-group">
+                <label>휴대폰 번호</label>
+                <input class="form-control" id="phone_num" name="phone_num" type="text" value="">
+                <input type="button" class="auth_btn" id="auth_btn" value="인증번호 전송">
+                <span id="error_phone"></span>
+                <div class="phone_confirm form-group">
+                    <input class= "confirm_box form-control" id="confirm_box" type="text" placeholder="인증번호를 입력하세요">
+                    <input type="button" class="confirm_btn" id="confirm_btn" value="인증번호 확인">
+                    <span id="confirmOk"></span>
+                </div>
+            </div>
+            <div class="provision">
+                <label>이용약관</label>
+                <div><input type="checkbox" id="all_agree"><span class="all_agree"> 전체동의</span></div>
+                <div><input type="checkbox" class="reserve_check"><a href="#"> 숙소이용규칙 및 취소/환불규정 동의 </a><span
+                        class="important">(필수)</span></div>
+                <div><input type="checkbox" class="reserve_check"><a href="#"> 개인정보 수집 및 이용 동의 </a><span
+                        class="important">(필수)</span></div>
+                <div><input type="checkbox" class="reserve_check"><a href="#"> 개인정보 제 3자 제공 동의 </a><span
+                        class="important">(필수)</span></div>
+                <div><input type="checkbox" class="reserve_check"><a href="#"> 만 14세 이상 확인 </a><span
+                        class="important">(필수)</span></div>
+            </div>
+        </form>
+        </div>
+        <div class="reserve_confirm">
+            <label class="reserve_index">숙소 이름</label>
+            <label>{{ hotel_name }}</label>
+            <label class="reserve_index">객실타입/기간</label>
+            <label>{{ reserve_room }} / {{night}}박</label>
+            <label class="reserve_index">체크인</label>
+            <label>{{reserve_startdate}}</label>
+            <label class="reserve_index">체크아웃</label>
+            <label>{{reserve_enddate}}</label>
+            <hr>
+            <div class="purchase_container">
+                <label>결제금액</label>
+                <label class="reserve_price">{{hotel_price}}</label>
+            </div>
+            <input class="purchase_btn" id="purchase_btn" type="submit" value="결제하기">
+        </div>
+    </section>
+</div>
+
+{% endblock %}

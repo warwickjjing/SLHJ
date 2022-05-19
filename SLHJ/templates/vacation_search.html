@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block extrahead %}
+<link href="{% static 'bs/css/vacation_search.css' %}" rel="stylesheet">
+<script src="{% static 'bs/js/va_search.js' %}"></script>
+{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/search.js' %}"></script>
+{% endblock%}
+{% block title %}검색{% endblock %}
+<div class="search">
+    <div class="list_search">      <!-- 검색 창 -->
+        <!-- 여행지 검색 -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="vacation_type" id="vacation_type" value="vacation_type">
+            <div class="vacation_search" id="vacation_search"> 
+                <ul>
+                    <li>
+                        <a onclick="search_va_location()" class="location" id="location">
+                            <i class="fas fa-map-marker-alt" class="map"></i><sapn id="va_lo_text">{{ SIGUN_NM }}</sapn>
+                        </a>  
+                    </li>
+                    <li>
+                        <a onclick="vacation_get_date()" class="vacation_get_date" id="vacation_get_date">
+                            <i class="fas fa-calendar-alt"></i><span id="vacation_date">{{ vacation_date }}</span>
+                            <input type="hidden" value="{{ vacation_date }}" name="vacation_date">
+                        </a>
+                    </li>
+                    <li>
+                        <a onclick="vacation_choice_people()" class="location" id="location">
+                            <i class="fas fa-user-alt"></i><span class="va_people">{{ vacation_reserve_people }}명</span></a>
+                    </li>
+                    <li class="hotel_submit"><input type="submit" class="chk_va_form" value="검색"></li>
+                </ul>
+            </div>
+            <!-- 여행지 상세선택창 -->
+            <!-- 지역 선택 -->
+            <ul class="vacation_location" id="vacation_location">
+                {% for place in vacation_places %}
+                <li id="{{ place.SIGUN_NM }}" class="vacation_lo_select" onclick="vacation_lo_select(this)">{{ place.SIGUN_NM }}</li>
+                <input type="hidden" id="va_lo_text" name="SIGUN_NM" value="{{ SIGUN_NM }}">
+                {% endfor %}
+            </ul>
+            <!-- 체크인/체크아웃 선택 -->
+            <div class="vacation_date_pick" id="vacation_date_pick">
+                <div>
+                    <div class="input-daterange reserve_date"><input type="text" name="va_daterange" id="datepicker" readonly /> 
+                    <input type="button" value="적용" name="va_date_choice">
+                    </div>
+                </div>
+            </div>
+            <!-- 인원선택 -->
+            <div class="reserve_people d-flex">
+                <div class="vacation_reserve_people">
+                <!-- 인원수 감소 -->
+                <button type="button" data-quantity="minus" data-field="vacation_reserve_people">
+                    <i class="fa fa-minus" aria-hidden="true"></i>
+                </button>
+                </div>
+                <!-- 인원수 -->
+                <input class="input-group-field vacation_reserve_people" type="number" name="vacation_reserve_people" max="1" value="{{ vacation_reserve_people }}" readonly/>
+                <!-- 인원수 증가 -->
+                <div class="vacation_reserve_people">
+                <button type="button" data-quantity="plus" data-field="vacation_reserve_people">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+    
+    
+<div class="list_content" onload="">
+    <!-- 좌측 list -->
+    <div class="left_list">
+        {% if lists %}
+            {% for vacation in lists %}
+                <button type="submit" class="table_list" onclick="search_choice(this)">
+                    <input type="hidden" value="{{ vacation.REFINE_WGS84_LAT }}" name="li_lat">
+                    <input type="hidden" value="{{ vacation.REFINE_WGS84_LOGT }}" name="li_lng"> 
+                    <input type="hidden" value="{{ vacation.REFINE_WGS84_LAT }}" name="lat">
+                    <input type="hidden" value="{{ vacation.REFINE_WGS84_LOGT }}" name="lng">
+                    <div class="list_table_content">                
+                        <!-- <div class="list_vacation_image">여기여기여기</div> -->
+                        <img class="list_vacation_image" style="background-image: url('/media/{{ vacation.vacation_image.vacation_image_file_path }}');">
+                        <div class= "list_text">
+                            <ul>
+                                <li class="list_vacation_name"> <a href="{% url 'vacation_detail' vacation.vacation_id %}">{{ vacation.TURSM_INFO_NM }}</a></li> 
+                                <li class="list_vacation_add"> {{ vacation.SM_RE_ADDR }} </li>
+                                <li>
+                                    <div class="list_rating">
+                                        {% for i in "x"|rjust:"5" %}
+                                            {% if vacation.vacation_rate >= forloop.counter %}
+                                            <i class="fas fa-star"></i>
+                                            {% else %}
+                                            <i class="fas fa-star no_star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </li>
+                                <br>
+                                <li class="list_vacation_pay">
+                                    {{ vacation.vacation_price|intcomma }}원
+                                    <!-- {% for hotel_room in hotel_rooms %}
+                                        {% if hotel_room.hotel_id_id == hotel.hotel_id %}    
+                                            {{ hotel_room.room_price|intcomma }}원
+                                    
+                                        {% endif %}
+                                    {% endfor %} -->
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </button>
+                
+            <p></p>
+            {% endfor %}  
+            <input type="hidden" value="{{ vacation.REFINE_WGS84_LAT }}" name="lat" class="lat">
+            <input type="hidden" value="{{ vacation.REFINE_WGS84_LOGT }}" name="lng" class="lng">  
+        {% endif %} 
+
+        <!-- 리스트 밑의 번호 -->
+
+
+        <div class="list_pagination" >
+            <ul class="pagination">
+                {# << 표시 여부 #} 
+                {% if lists.number > 1 %}       
+                <li class="page-item"><a class="page-link" href="?page=1" title="처음"><i class='fas fa-angle-double-left'></i></a></li>
+                {% endif %}
+
+                {# < 표시 여부 #}
+                {% if 1 < lists.number  %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.previous_page_number }}" title="이전"><i class='fas fa-angle-left'></i></a></li>
+                {% endif %}
+
+                {# 페이징 안의 '숫자' 표시 #}
+                {% if lists.paginator.num_pages > 1 %}
+                    {% for p in page_range %}
+                        {% if lists.number != p %}
+                        <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {# > 표시 #}
+                {% if lists.number < last_page   %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.next_page_number }}" title="다음"><i class='fas fa-angle-right'></i></a></li>
+                
+                {% endif %}
+            
+                {# >> 표시 #}
+                {% if lists.number < last_page %}
+                <li class="page-item"><a class="page-link" href="?page={{ last_page }}" title="마지막"><i class='fas fa-angle-double-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <!-- 우측 지도 -->
+    <div id="map_none" class="list_gps_none"></div>
+    <div id="googleMap" class="list_gps_map"></div>
+</div>
+    
+    
+   
+
+
+{% endblock %}
+{% block extrafoot %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGkSbB_IhB_i3-8caf6gKcuDHLJT27d0k&callback=myMap"></script>    
+
+{% endblock %}  

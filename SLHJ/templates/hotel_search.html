@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block extrahead %}
+<link href="{% static 'bs/css/hotel_search.css' %}" rel="stylesheet">
+<script src="{% static 'bs/js/ho_search.js' %}"></script>
+{% endblock %}
+
+{% block contents %}
+{% block script %}
+<script src="{% static 'bs/js/search.js' %}"></script>
+{% endblock%}
+{% block title %}검색{% endblock %}
+<div class="search">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="hotel_search" id="hotel_search"> <!-- 호텔 검색창 -->
+            <ul>
+                <li>
+                    <a onclick="search_location()" class="location" id="location">
+                        <i class="fas fa-map-marker-alt" class="map"></i><sapn id="lo_text">{{ SIGUN_NM }}</sapn>
+                        <input type="hidden" id="lo_text" name="SIGUN_NM" value="{{ SIGUN_NM }}">
+                    </a>
+                </li>
+                <ul>
+                    <a onclick="get_date()" class="get_date" id="get_date">
+                        <li class="chk_date">
+                            <i class="fas fa-calendar-alt"></i><span id="chk_in">{{ start_date }}</span>
+                        </li>
+                        <li><span id="chk_out">{{ end_date }}</span></li>
+                        <input type="hidden" value="{{ start_date }}" name="start_date">
+                        <input type="hidden" value="{{ end_date }}" name="end_date">
+                    </a>
+                </ul>
+                <li class="choice_people" onclick="choice_people()">
+                    <a><i class="fas fa-user-alt"></i><span class="people">{{ hotel_reserve_people }}명</a></span>
+                </li>
+                <li class="hotel_submit"><input type="submit" class="chk_form" value="검색"></li>
+            </ul>
+        </div>
+        <ul class="hotel_location" id="hotel_location">
+            {% for place in hotel_places %}
+            <li id="{{ place.SIGUN_NM }}" class="hotel_lo_select" onclick="hotel_lo_select(this)">{{ place.SIGUN_NM }}</li>
+            {% endfor %}
+        </ul>
+        <!-- </div> -->
+        <div class="date_pick" id="date_pick">
+            <div>
+                <div class="input-daterange reserve_date"><input type="text" name="search_ho_daterange" id="datepicker" readonly /> 
+                <input type="button" value="적용" name="date_choice">
+                </div>
+            </div>
+        </div>
+        <div class="reserve_people d-flex">
+            <div class="hotel_reserve_people">
+            <!-- 인원수 감소 -->
+            <button type="button" data-quantity="minus" data-field="hotel_reserve_people">
+                <i class="fa fa-minus" aria-hidden="true"></i>
+            </button>
+            </div>
+            <!-- 인원수 -->
+            <input class="input-group-field hotel_reserve_people" type="number" name="hotel_reserve_people" max="1" value="{{ hotel_reserve_people }}" readonly/>
+            <!-- 인원수 증가 -->
+            <div class="hotel_reserve_people">
+                <button type="button" data-quantity="plus" data-field="hotel_reserve_people">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% if lists %}
+<div class="list_content">
+    <!-- 좌측 list -->
+    <div class="left_list">
+        {% if lists %}
+            {% for hotel in lists %}
+                <button type="submit" class="table_list" onclick="search_choice(this)">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="li_lat">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="li_lng"> 
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="lat">
+                    <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="lng">                  
+                    <div name="price_list">
+                    {% for hotel_room in hotel_rooms %}                                           
+                        {% if hotel_room.hotel_id_id == hotel.hotel_id %}
+                            <input type="hidden" value="{{ hotel_room.room_price }}" name="price[]">  
+                        {% endif %}                                       
+                    {% endfor %}
+                    </div>
+                    <div class="list_table_content">
+                        <img class="list_hotel_image" style="background-image: url('/media/{{ hotel.hotel_image.hotel_image_file_path }}');">
+                        <!-- <div class="list_hotel_image"></div> -->
+                        <div class= "list_text">
+                            <ul>
+                                <li class="list_hotel_name">  <a href="{% url 'hotel_detail' hotel.hotel_id %}">{{ hotel.BIZPLC_NM }}</a></li> 
+                                <li class="list_hotel_add"> {{ hotel.REFINE_ROADNM_ADDR }} </li>
+                                <li>
+                                    <div class="list_rating">
+                                        {% for i in "x"|rjust:"5" %}
+                                            {% if hotel.hotel_rate >= forloop.counter %}
+                                            <i class="fas fa-star"></i>
+                                            {% else %}
+                                            <i class="fas fa-star no_star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </li>
+                                <br>
+                                <li class="list_hotel_pay">                            
+                                <div id="fn_price{{forloop.counter}}" style="display:inline"></div>원
+                                </li>
+                            </ul> 
+                        </div>
+                    </div>
+                </button>
+                
+            <p></p>
+            {% endfor %}  
+            <input type="hidden" value="{{ hotel.REFINE_WGS84_LAT }}" name="lat" class="lat">
+            <input type="hidden" value="{{ hotel.REFINE_WGS84_LOGT }}" name="lng" class="lng">  
+        {% endif %} 
+
+        <!-- 리스트 밑의 번호 -->
+
+
+        <div class="list_pagination" >
+            <ul class="pagination">
+                {# << 표시 여부 #} 
+                {% if lists.number > 1 %}       
+                <li class="page-item"><a class="page-link" href="?page=1" title="처음"><i class='fas fa-angle-double-left'></i></a></li>
+                {% endif %}
+
+                {# < 표시 여부 #}
+                {% if 1 < lists.number  %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.previous_page_number }}" title="이전"><i class='fas fa-angle-left'></i></a></li>
+                {% endif %}
+
+                {# 페이징 안의 '숫자' 표시 #}
+                {% if lists.paginator.num_pages > 1 %}
+                    {% for p in page_range %}
+                        {% if lists.number != p %}
+                        <li class="page-item"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item active"><a class="page-link" href="#" title="현재페이지">{{ p }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {# > 표시 #}
+                {% if lists.number < last_page   %}
+                <li class="page-item"><a class="page-link" href="?page={{ lists.next_page_number }}" title="다음"><i class='fas fa-angle-right'></i></a></li>
+                
+                {% endif %}
+            
+                {# >> 표시 #}
+                {% if lists.number < last_page %}
+                <li class="page-item"><a class="page-link" href="?page={{ last_page }}" title="마지막"><i class='fas fa-angle-double-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <!-- 우측 지도 -->
+        <div id="map_none" class="list_gps_none"></div>
+        <div id="googleMap" class="list_gps_map"></div>
+        
+   
+    <!-- <div id="googleMap" class="list_gps_map"></div>
+
+    {% if  hotel_img.hotel_image_file_path %}
+        <div class="hotel_main_img mt-4 mb-5" style="background-image: url('/media/{{ hotel_img.hotel_image_file_path }}');"></div>
+        {% else %}
+        <div class="hotel_main_img mt-4 mb-5" style="background-image: url('/static/img/img_noimg.jpg');"></div> -->
+        <!-- {% endif %} -->
+</div>
+{% else %}
+<div>
+    <p class="d-flex justify-content-center mt-5">예약가능한 숙소 정보가 없습니다.</p>
+</div>
+{% endif %}    
+   
+
+
+{% endblock %}
+{% block extrafoot %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGkSbB_IhB_i3-8caf6gKcuDHLJT27d0k&callback=myMap"></script>    
+
+{% endblock %}
